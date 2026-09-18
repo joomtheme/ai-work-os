@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: workos
+      POSTGRES_PASSWORD: workos
+      POSTGRES_DB: workos
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - mission-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workos"]
+      interval: 5s
+      retries: 10
+volumes:
+  mission-db:
