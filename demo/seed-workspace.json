@@ -1,0 +1,28 @@
+{
+  "workspace": "AI Work OS Demo",
+  "mission": {
+    "title": "Build a Joomla AI Assistant",
+    "goal": "Create, review and package a working feature",
+    "status": "running"
+  },
+  "agents": [
+    {
+      "name": "Research Agent",
+      "status": "completed"
+    },
+    {
+      "name": "Coding Agent",
+      "status": "running"
+    },
+    {
+      "name": "QA Agent",
+      "status": "waiting"
+    }
+  ],
+  "events": [
+    "MISSION_CREATED",
+    "AGENT_STARTED",
+    "TOOL_RUNNING",
+    "MEMORY_UPDATED"
+  ]
+}
