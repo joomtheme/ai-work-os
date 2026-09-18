@@ -1,3 +1,4 @@
+import type { CodingPolicy } from "./coding/policy.ts";
 export type State =
   | "awaiting_plan_approval"
   | "ready"
@@ -8,6 +9,14 @@ export type State =
   | "completed"
   | "cancelled";
 export type Mission = {
+  mode?: "demo" | "coding";
+  coding?: { commit: string; policy: CodingPolicy };
+  codeRun?: {
+    id: string;
+    startedAt: string;
+    dispatched: boolean;
+    accountedCents: number;
+  };
   id: string;
   workspace: string;
   goal: string;

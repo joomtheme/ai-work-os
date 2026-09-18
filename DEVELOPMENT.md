@@ -3,7 +3,8 @@
 This is a working development slice of the proposed architecture. It implements
 mission contracts, plan approval, a deterministic two-step worker, persistent
 checkpoints, simulated budget accounting, evidence inspection and owner acceptance.
-All interface text and repository content are in English.
+All interface text and repository content are in English. This guide describes
+the demo mode. See CONNECTED_CODING.md for the separate real provider/runner path.
 
 **No AI provider is called, no repository is read or changed, and no real costs are
 incurred.** Demo verification checks that criteria appear in a generated artifact.

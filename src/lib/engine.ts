@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { Database, Queryable } from "./db.ts";
 import type { Mission, Action } from "./types.ts";
+import { validatePolicy } from "./coding/policy.ts";
 
 export class DomainError extends Error {
   constructor(
@@ -12,7 +13,7 @@ export class DomainError extends Error {
 }
 export const digest = (content: string) =>
   createHash("sha256").update(content).digest("hex");
-const event = (m: Mission, actor: string, message: string) =>
+export const event = (m: Mission, actor: string, message: string) =>
   m.events.push({ at: new Date().toISOString(), actor, message });
 const planDigest = (m: Mission) =>
   digest(
@@ -23,6 +24,8 @@ const planDigest = (m: Mission) =>
       m.budgetCents,
       m.planVersion,
       m.tasks.map((t) => t.title),
+      m.mode ?? "demo",
+      m.coding,
     ]),
   );
 function contract(input: unknown) {
@@ -56,14 +59,29 @@ function contract(input: unknown) {
     Number(p.budgetCents) > 100000
   )
     throw new DomainError("Budget must be between $0.01 and $1,000.");
+  const mode = p.mode ?? "demo";
+  if (mode !== "demo" && mode !== "coding")
+    throw new DomainError("Invalid mission mode.");
+  let coding: Mission["coding"];
+  if (mode === "coding") {
+    const scope = p.coding as Mission["coding"];
+    if (!scope || !/^[a-f0-9]{40}$/.test(scope.commit))
+      throw new DomainError("Coding missions require a full commit SHA.");
+    const policy = validatePolicy(scope.policy);
+    if (policy.repository !== p.repository)
+      throw new DomainError("Coding policy repository mismatch.");
+    coding = { commit: scope.commit, policy };
+  }
   return {
+    mode: mode as "demo" | "coding",
+    coding,
     goal: p.goal.trim(),
     repository: p.repository,
     criteria: [...new Set((p.criteria as string[]).map((c) => c.trim()))],
     budgetCents: p.budgetCents as number,
   };
 }
-async function read(
+export async function read(
   tx: Queryable,
   workspace: string,
   id: string,
@@ -80,7 +98,7 @@ async function read(
   if (!rows[0]) throw new DomainError("Mission not found.", 404);
   return rows[0].document;
 }
-async function save(tx: Queryable, m: Mission) {
+export async function save(tx: Queryable, m: Mission) {
   m.version++;
   await tx.query(
     "UPDATE missions SET document=$3::jsonb WHERE workspace=$1 AND id=$2",
@@ -126,8 +144,25 @@ export class Engine {
       evidence: [],
       events: [],
     };
+    if (m.mode === "coding")
+      m.tasks = [
+        {
+          title: "Read the approved source snapshot and propose a code change",
+          done: false,
+        },
+        {
+          title: "Run baseline and changed code checks in Docker",
+          done: false,
+        },
+      ];
     m.planDigest = planDigest(m);
-    event(m, "owner", "Mission created. Demo plan is waiting for approval.");
+    event(
+      m,
+      "owner",
+      m.mode === "coding"
+        ? "Coding mission created. Approval authorizes sending the listed source files to the configured model and running the listed checks."
+        : "Mission created. Demo plan is waiting for approval.",
+    );
     await this.db.query(
       "INSERT INTO missions(workspace,id,document) VALUES($1,$2,$3::jsonb)",
       [workspace, m.id, JSON.stringify(m)],
@@ -155,13 +190,18 @@ export class Engine {
           throw new DomainError("No plan is awaiting approval.", 409);
         m.approvedDigest = m.planDigest;
         m.state = "ready";
-        await enqueue(tx, m);
+        if (m.mode !== "coding") await enqueue(tx, m);
         event(
           m,
           "owner",
           `Plan v${m.planVersion} approved (${m.planDigest.slice(0, 12)}).`,
         );
       } else if (action === "pause") {
+        if (m.mode === "coding")
+          throw new DomainError(
+            "Coding runs cannot be paused. Cancel to reject further results; an already dispatched call may still incur cost.",
+            409,
+          );
         if (!["ready", "running", "verifying"].includes(m.state))
           throw new DomainError("Only active missions can be paused.", 409);
         m.resumeState = m.tasks[0].done ? "verifying" : "ready";
@@ -174,6 +214,11 @@ export class Engine {
         );
         event(m, "owner", "Execution paused. Active worker lease revoked.");
       } else if (action === "resume") {
+        if (m.mode === "coding")
+          throw new DomainError(
+            "Review the blocker and revise the coding contract before retrying.",
+            409,
+          );
         if (m.state !== "blocked")
           throw new DomainError("Mission is not blocked.", 409);
         if (m.approvedDigest !== m.planDigest)
@@ -207,7 +252,13 @@ export class Engine {
             "Pause execution before revising the contract.",
             409,
           );
-        Object.assign(m, contract(input));
+        const revision = contract(input);
+        if (revision.mode !== (m.mode ?? "demo"))
+          throw new DomainError(
+            "Create a new mission to change execution mode.",
+          );
+        Object.assign(m, revision);
+        delete m.codeRun;
         m.planVersion++;
         m.tasks.forEach((t) => (t.done = false));
         m.evidence = [];
@@ -228,6 +279,32 @@ export class Engine {
           "Contract revised. Previous approval and evidence invalidated.",
         );
       } else if (action === "accept") {
+        if (m.mode === "coding") {
+          if (
+            (input as { reviewedCriteria?: boolean })?.reviewedCriteria !== true
+          )
+            throw new DomainError(
+              "Confirm that you reviewed every acceptance criterion.",
+            );
+          if (
+            m.state !== "awaiting_acceptance" ||
+            !m.artifact ||
+            digest(m.artifact.content) !== m.artifact.digest
+          )
+            throw new DomainError("Verified delivery is not available.", 409);
+          const delivery = JSON.parse(m.artifact.content);
+          if (
+            delivery.kind !== "coding-delivery" ||
+            delivery.planDigest !== m.planDigest ||
+            delivery.after.exitCode !== 0 ||
+            delivery.after.timedOut
+          )
+            throw new DomainError("Verification did not pass.", 409);
+          m.evidence.forEach((e) => {
+            e.passed = true;
+            e.detail += " Owner reviewed and accepted this criterion.";
+          });
+        }
         if (
           m.state !== "awaiting_acceptance" ||
           !m.artifact ||
@@ -250,7 +327,9 @@ export class Engine {
         event(
           m,
           "owner",
-          "Demo delivery accepted. No repository code was changed.",
+          m.mode === "coding"
+            ? "Code proposal accepted after human criterion review. Changes have not been published to GitHub."
+            : "Demo delivery accepted. No repository code was changed.",
         );
       } else throw new DomainError("Unknown action.");
       await save(tx, m);
@@ -261,7 +340,7 @@ export class Engine {
   async claim(workspace: string, now = new Date()) {
     return this.db.transaction(async (tx) => {
       const { rows } = await tx.query<{ id: string }>(
-        "SELECT m.id FROM missions m JOIN jobs j ON j.workspace=m.workspace AND j.mission_id=m.id WHERE m.workspace=$1 AND (j.lease_until IS NULL OR j.lease_until <= $2) ORDER BY m.id FOR UPDATE OF m SKIP LOCKED LIMIT 1",
+        "SELECT m.id FROM missions m JOIN jobs j ON j.workspace=m.workspace AND j.mission_id=m.id WHERE m.workspace=$1 AND COALESCE(m.document->>'mode','demo')='demo' AND (j.lease_until IS NULL OR j.lease_until <= $2) ORDER BY m.id FOR UPDATE OF m SKIP LOCKED LIMIT 1",
         [workspace, now],
       );
       if (!rows[0]) return null;

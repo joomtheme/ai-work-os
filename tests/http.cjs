@@ -15,6 +15,7 @@ const server = spawn(
     cwd: root,
     env: {
       ...process.env,
+      DATABASE_URL: "",
       PGLITE_DATA_DIR: root + "/.data/http-test",
       WORKSPACE_TOKEN: "development-test-token-only-123456789",
       APP_ORIGIN: "http://127.0.0.1:3100",
@@ -91,6 +92,24 @@ const base = "http://127.0.0.1:3100";
       body: "{}",
     });
     assert.equal(r.status, 403);
+    r = await fetch(base + "/api/missions", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        mode: "coding",
+        repository: "team/example",
+        goal: "Attempt an unconfigured coding mission",
+        criteria: ["Check result"],
+        budgetCents: 100,
+        commit: "a".repeat(40),
+        coding: { policy: { repository: "team/example" } },
+      }),
+    });
+    assert.equal(
+      r.status,
+      409,
+      "Embedded mode must reject connected execution even if a client supplies a policy",
+    );
     r = await fetch(base + "/");
     assert.equal(r.status, 200);
     assert.match(await r.text(), /AI Work OS/);

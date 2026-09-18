@@ -1,3 +1,4 @@
+import { resolveCodingContract } from "../../../../lib/coding/contract.ts";
 import { database } from "../../../../lib/db.ts";
 import { Engine } from "../../../../lib/engine.ts";
 import {
@@ -21,6 +22,8 @@ export const POST = (
       (await params).id,
       input?.action,
       input?.version,
-      input?.contract,
+      input?.action === "revise"
+        ? await resolveCodingContract(input?.contract)
+        : input?.contract,
     );
   });

@@ -1,3 +1,4 @@
+import { resolveCodingContract } from "../../../lib/coding/contract.ts";
 import { database } from "../../../lib/db.ts";
 import { Engine } from "../../../lib/engine.ts";
 import {
@@ -17,5 +18,8 @@ export const POST = (request: Request) =>
   route(async () => {
     sameOrigin(request);
     await authorize();
-    return new Engine(await database()).create(WORKSPACE, await body(request));
+    return new Engine(await database()).create(
+      WORKSPACE,
+      await resolveCodingContract(await body(request)),
+    );
   });
