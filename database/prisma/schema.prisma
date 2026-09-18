@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Mission {
+  id        String   @id @default(cuid())
+  title     String
+  objective String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  executions Execution[]
+}
+
+model Execution {
+  id        String   @id @default(cuid())
+  missionId String
+  event     String
+  payload   Json?
+  createdAt DateTime @default(now())
+  mission   Mission @relation(fields: [missionId], references: [id])
+}
