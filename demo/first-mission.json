@@ -1,0 +1,15 @@
+{
+  "mission": "Build Joomla AI SEO Assistant",
+  "agents": [
+    "Research Agent",
+    "Coding Agent",
+    "QA Agent"
+  ],
+  "flow": [
+    "MISSION_CREATED",
+    "PLANNER_STARTED",
+    "AGENTS_ASSIGNED",
+    "EXECUTION_STARTED",
+    "RESULT_CREATED"
+  ]
+}
