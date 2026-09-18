@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  missions  Mission[]
+}
+
+model Mission {
+  id          String   @id @default(cuid())
+  title       String
+  objective   String
+  status      String   @default("planned")
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  runs        MissionRun[]
+  createdAt   DateTime @default(now())
+}
+
+model Agent {
+  id          String @id @default(cuid())
+  name        String
+  role        String
+  capabilities Json
+}
+
+model MissionRun {
+  id        String @id @default(cuid())
+  missionId String
+  mission  Mission @relation(fields: [missionId], references: [id])
+  status   String @default("queued")
+  output   String?
+  createdAt DateTime @default(now())
+}
+
+model Memory {
+  id        String @id @default(cuid())
+  scope     String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+}
