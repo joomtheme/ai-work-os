@@ -2,199 +2,155 @@
 
 ## The Operating System for Human + AI Collaboration
 
-AI Work OS is a next-generation platform where humans define missions and intelligent AI teams plan, execute, verify, and deliver outcomes.
+AI Work OS is an open platform for building, managing and orchestrating AI teams.
 
-The goal is simple: move from using isolated AI tools to managing AI-powered teams that can work together inside a structured operating environment.
+Not another AI assistant.
 
----
+A workspace where humans create missions and AI teams plan, execute, verify and deliver outcomes.
 
-## 🧠 Core Idea
-
-Traditional software helps people manage work.
-
-AI Work OS helps people accomplish work.
+## 🧠 Core Workflow
 
 ```text
-Intent
-  ↓
+Human Intent
+     ↓
 Mission
-  ↓
+     ↓
 AI Team Planning
-  ↓
-Execution
-  ↓
+     ↓
+Agent Execution
+     ↓
 Verification
-  ↓
+     ↓
 Outcome
 ```
 
----
+## ✨ Why AI Work OS?
 
-## ✨ Features
+Traditional software helps people manage tasks.
 
-- AI team based workflow
-- Mission driven execution
-- Workspace based organization
-- Agent collaboration model
-- Persistent memory concepts
-- Developer extensibility
-- Future marketplace architecture
+AI Work OS helps people accomplish goals with specialized AI teams.
 
----
+Core principles:
 
-## 🏗️ Architecture
+- 🎯 Outcome-first execution
+- 🤖 Specialized AI agents
+- 🧠 Persistent memory
+- 🔐 Human-controlled automation
+- 📊 Evidence-based delivery
+
+## 🏗️ Platform Architecture
 
 ```text
 AI Work OS
-
-├── Frontend
 │
-├── API Layer
-│
-├── Workspace System
-│
+├── Workspace Layer
 ├── Mission Engine
-│
 ├── Agent Runtime
-│
 ├── Memory System
-│
-├── Marketplace
-│
-└── Developer SDK
+├── Tool Integrations
+├── Developer SDK
+└── Agent Marketplace
 ```
 
----
+## 🤖 AI Teams
 
-## 🤖 AI Team Model
+AI Work OS is designed around teams of specialized agents.
 
-AI Work OS is designed around specialized AI workers.
+Examples:
 
-```text
-Agent
+- Research Agent
+- Strategy Agent
+- Coding Agent
+- Review Agent
+- Operations Agent
 
-├── Identity
-├── Skills
-├── Tools
-├── Memory
-├── Runtime
-└── Output
-```
+Each agent can have:
 
-Developers can create new AI capabilities and extend the platform.
+- Skills
+- Tools
+- Memory
+- Rules
+- Execution policies
 
----
+## 🏢 Workspace Model
 
-## 🏢 Workspace
+Every user works inside a dedicated AI workspace.
 
-Each user works inside a dedicated workspace.
-
-A workspace manages:
+Manage:
 
 - Missions
 - AI teams
-- Execution history
 - Results
+- History
 - Integrations
 
----
-
-## 🚀 Getting Started
-
-### Requirements
-
-- Git
-- Node.js
-- Docker
-
-### Clone
+## 🚀 Quick Start
 
 ```bash
 git clone https://github.com/joomtheme/ai-work-os.git
 
 cd ai-work-os
-```
 
-### Environment
-
-```bash
 cp .env.example .env
-```
 
-Configure required environment variables.
-
-### Run
-
-```bash
 docker compose up
 ```
 
----
-
-## 🔥 First User Flow
+## 🔥 First Experience
 
 ```text
-Create Account
-
-↓
-
-Create Workspace
-
-↓
-
-Create Mission
-
-↓
-
-AI Team Executes
-
-↓
-
-Review Result
+Create account
+      ↓
+Create workspace
+      ↓
+Create mission
+      ↓
+AI team executes
+      ↓
+Review result
 ```
 
----
+## 🛠️ Developer Platform
 
-## 🛠️ Development
+AI Work OS is built to become an ecosystem where developers can create and share AI capabilities.
 
-The project is being built in layers:
+Future platform components:
 
-### Platform Core
-
-- Workspace model
-- Mission lifecycle
-- Agent architecture
-- Runtime foundation
-
-### Product Layer
-
-- User experience
-- Dashboard
-- Execution visibility
-
-### Ecosystem Layer
-
-- Developer SDK
-- Agent packages
-- Marketplace
-
----
+- Agent SDK
+- Agent Marketplace
+- Plugins
+- Integrations
+- Custom AI teams
 
 ## 🗺️ Roadmap
 
 ### Phase 1
+Mission Platform
 
-Core AI Work OS foundation.
+- Mission lifecycle
+- Agent execution
+- Evidence system
 
 ### Phase 2
+AI Team Platform
 
-AI teams, developer tools, and integrations.
+- Agent orchestration
+- Memory
+- Tools
 
 ### Phase 3
+Developer Ecosystem
 
-Enterprise AI operating system capabilities.
+- SDK
+- Marketplace
+- Extensions
 
----
+### Phase 4
+Production SaaS
+
+- Organizations
+- Collaboration
+- Enterprise features
 
 ## 🤝 Contributing
 
@@ -204,16 +160,8 @@ Contributions are welcome.
 2. Create a feature branch
 3. Submit a pull request
 
-Example:
-
-```bash
-git checkout -b feature/new-agent
-```
-
----
-
 ## 🌐 Vision
 
 Build the operating system where humans define the future and AI teams make it happen.
 
-🚀 AI Work OS
+⭐ Star the repository to follow the journey.
