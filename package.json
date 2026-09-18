@@ -1,0 +1,15 @@
+{
+  "name": "ai-work-os",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@10",
+  "scripts": {
+    "dev": "echo 'AI Work OS development environment'",
+    "build": "echo 'Build placeholder'",
+    "test": "echo 'Tests placeholder'"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
