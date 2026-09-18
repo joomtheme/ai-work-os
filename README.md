@@ -41,7 +41,16 @@ run a deterministic worker, inspect simulated evidence, and accept delivery.
 The preview includes a responsive web workspace and persistent PostgreSQL storage.
 An embedded PostgreSQL option is available for local demos.
 
-This is not yet a connected AI workforce: outputs and costs are simulated,
-and no repository code is read or changed.
+The default demo mode uses simulated outputs and costs. Connected coding is
+an explicit, separately configured mode described below.
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for setup, commands, tests and current limits.
+
+## Connected coding (opt-in)
+
+A separate worker can read approved files at an immutable GitHub commit, request
+a code change from a configured OpenAI model, and run baseline/changed checks in
+Docker. It returns an unpublished proposal for human review. Provider credentials,
+PostgreSQL and Docker are required; there is no simulation fallback.
+
+See [CONNECTED_CODING.md](CONNECTED_CODING.md) for setup and limitations.

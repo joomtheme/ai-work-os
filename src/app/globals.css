@@ -777,3 +777,26 @@ footer span {
     font-size: 21px;
   }
 }
+
+select {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fcfdf9;
+  color: var(--ink);
+  font: inherit;
+}
+.coding-scope {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  margin: 18px 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.coding-scope p {
+  margin-bottom: 8px;
+}

@@ -34,3 +34,7 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: 1
       - run: npm run test:http
+      - name: Verify the isolated Docker runner
+        run: |
+          docker pull node:24-bookworm-slim
+          TEST_DOCKER_IMAGE=$(docker image inspect node:24-bookworm-slim --format '{{index .RepoDigests 0}}') node --import tsx --test tests/docker.test.ts

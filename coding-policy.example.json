@@ -1,0 +1,13 @@
+[
+  {
+    "repository": "joomtheme/ai-work-os",
+    "paths": ["fixtures/coding/cart.mjs", "fixtures/coding/cart.test.mjs"],
+    "editablePaths": ["fixtures/coding/cart.mjs"],
+    "image": "node@sha256:REPLACE_WITH_YOUR_APPROVED_IMAGE_DIGEST",
+    "command": ["node", "--test", "fixtures/coding/cart.test.mjs"],
+    "model": "REPLACE_WITH_YOUR_SUPPORTED_MODEL_ID",
+    "inputCentsPerMillion": 0,
+    "outputCentsPerMillion": 0,
+    "maxOutputTokens": 4000
+  }
+]

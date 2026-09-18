@@ -6,3 +6,5 @@ node_modules/
 *.tsbuildinfo
 test-results/
 .data-test-*/
+.work-os-runs/
+coding-policy.local.json

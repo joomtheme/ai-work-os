@@ -111,6 +111,8 @@ export default function Home() {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const contract = {
+      mode: data.get("mode") ?? "demo",
+      commit: data.get("commit"),
       goal: data.get("goal"),
       repository: data.get("repository"),
       criteria: String(data.get("criteria"))
@@ -234,11 +236,14 @@ export default function Home() {
           <b>{approvals.length}</b>
         </button>
         <div className="sidebar-bottom">
-          <span className="dot" /> Demo worker
+          <span className="dot" />{" "}
+          {current?.mode === "coding" ? "Connected coding" : "Demo mode"}
           <small>
-            Simulated outputs and costs.
+            {current?.mode === "coding"
+              ? "Model usage may incur charges."
+              : "Simulated outputs and costs."}
             <br />
-            No repository changes.
+            No GitHub writes.
           </small>
           <button
             className="text-button"
@@ -313,21 +318,22 @@ export default function Home() {
               <small>Reviewed by you</small>
             </div>
             <div>
-              <span>Simulated spend</span>
+              <span>Accounted budget</span>
               <strong>
                 {money(missions.reduce((s, m) => s + m.spentCents, 0))}
               </strong>
-              <small>No actual charges</small>
+              <small>Demo amounts + connected estimates</small>
             </div>
           </div>
           <div className="demo-notice">
             <span>◉</span>
             <div>
-              <b>A working foundation, with a demo workforce.</b> Every output
-              is simulated.{" "}
+              <b>Choose a demo or an approved coding mission.</b> Demo outputs
+              are simulated. Connected runs use real source files and model
+              calls.{" "}
               {embedded
                 ? "Keep this workspace open to run steps."
-                : "Start the standalone worker to run queued missions."}
+                : "Start the matching standalone worker to run queued missions."}
             </div>
           </div>
           {error && (
@@ -360,6 +366,36 @@ export default function Home() {
               </p>
               <form onSubmit={submit} key={editing?.id ?? "new"}>
                 <label>
+                  Execution mode
+                  <select name="mode" defaultValue={editing?.mode ?? "demo"}>
+                    <option value="demo" disabled={editing?.mode === "coding"}>
+                      Demo — no external calls
+                    </option>
+                    <option
+                      value="coding"
+                      disabled={
+                        embedded || (!!editing && editing.mode !== "coding")
+                      }
+                    >
+                      Connected coding — configured repository policy
+                    </option>
+                  </select>
+                  <small>
+                    Connected mode sends approved source files to the configured
+                    model and may incur charges. PostgreSQL and a coding worker
+                    are required.
+                  </small>
+                </label>
+                <label>
+                  Source commit SHA (connected coding only)
+                  <input
+                    name="commit"
+                    defaultValue={editing?.coding?.commit}
+                    placeholder="Full 40-character commit SHA"
+                    maxLength={40}
+                  />
+                </label>
+                <label>
                   Outcome
                   <textarea
                     name="goal"
@@ -381,11 +417,12 @@ export default function Home() {
                       placeholder="owner/repository"
                     />
                     <small>
-                      Reference only in this demo. No access is requested.
+                      Demo uses a reference only. Connected coding reads only
+                      files allowed by the server policy.
                     </small>
                   </label>
                   <label>
-                    Simulated budget (USD)
+                    Mission budget (USD)
                     <input
                       name="budget"
                       type="number"
@@ -396,7 +433,9 @@ export default function Home() {
                       required
                     />
                     <small>
-                      Each demo step uses $0.05 of simulated budget.
+                      Demo steps use $0.05 simulated. Connected runs account a
+                      conservative model-cost estimate; runner costs are
+                      excluded.
                     </small>
                   </label>
                 </div>
@@ -411,8 +450,8 @@ export default function Home() {
                     }
                   />
                   <small>
-                    One criterion per line, up to 10. Demo checks only confirm
-                    inclusion in an artifact.
+                    One criterion per line, up to 10. Connected delivery
+                    requires your review of each criterion.
                   </small>
                 </label>
                 <button disabled={busy}>
@@ -508,11 +547,42 @@ export default function Home() {
                     </div>
                     <h2 className="mission-title">{current.goal}</h2>
                     <p className="repo">{current.repository}</p>
+                    {current.coding && (
+                      <div className="coding-scope">
+                        <h3>Scope you are approving</h3>
+                        <p>
+                          Commit{" "}
+                          <code className="hash">{current.coding.commit}</code>
+                        </p>
+                        <p>
+                          Model: {current.coding.policy.model}. Listed source
+                          files will be sent to this provider.
+                        </p>
+                        <p>Read: {current.coding.policy.paths.join(", ")}</p>
+                        <p>
+                          Edit: {current.coding.policy.editablePaths.join(", ")}
+                        </p>
+                        <p>
+                          Check:{" "}
+                          <code>{current.coding.policy.command.join(" ")}</code>
+                        </p>
+                        <details>
+                          <summary>Runner and accounting policy</summary>
+                          <pre>
+                            {JSON.stringify(current.coding.policy, null, 2)}
+                          </pre>
+                        </details>
+                      </div>
+                    )}
                     {current.blockedReason && (
                       <div className="error">{current.blockedReason}</div>
                     )}
                     <div className="budget">
-                      <span>Simulated budget</span>
+                      <span>
+                        {current.mode === "coding"
+                          ? "Accounted model estimate"
+                          : "Simulated budget"}
+                      </span>
                       <b>
                         {money(current.spentCents)}{" "}
                         <span className="muted">
@@ -566,34 +636,51 @@ export default function Home() {
                           disabled={busy}
                           onClick={() => perform("approve")}
                         >
-                          Approve demo plan →
+                          {current.mode === "coding"
+                            ? "Approve coding scope →"
+                            : "Approve demo plan →"}
                         </button>
                       )}
-                      {["ready", "running", "verifying"].includes(
-                        current.state,
-                      ) && (
-                        <button
-                          className="secondary"
-                          disabled={busy}
-                          onClick={() => perform("pause")}
-                        >
-                          Pause execution
-                        </button>
-                      )}
-                      {current.state === "blocked" && (
-                        <button
-                          disabled={busy}
-                          onClick={() => perform("resume")}
-                        >
-                          Resume execution
-                        </button>
-                      )}
+                      {current.mode !== "coding" &&
+                        ["ready", "running", "verifying"].includes(
+                          current.state,
+                        ) && (
+                          <button
+                            className="secondary"
+                            disabled={busy}
+                            onClick={() => perform("pause")}
+                          >
+                            Pause execution
+                          </button>
+                        )}
+                      {current.mode !== "coding" &&
+                        current.state === "blocked" && (
+                          <button
+                            disabled={busy}
+                            onClick={() => perform("resume")}
+                          >
+                            Resume execution
+                          </button>
+                        )}
                       {current.state === "awaiting_acceptance" && (
                         <button
                           disabled={busy}
-                          onClick={() => perform("accept")}
+                          onClick={() => {
+                            if (current.mode !== "coding")
+                              void perform("accept");
+                            else if (
+                              confirm(
+                                "I reviewed the changes, test evidence and every acceptance criterion. Accept this unpublished code proposal?",
+                              )
+                            )
+                              void perform("accept", {
+                                reviewedCriteria: true,
+                              });
+                          }}
                         >
-                          Accept simulated delivery
+                          {current.mode === "coding"
+                            ? "Review and accept code proposal"
+                            : "Accept simulated delivery"}
                         </button>
                       )}
                       {[
@@ -632,11 +719,16 @@ export default function Home() {
                       <section className="evidence">
                         <h3>
                           Delivery evidence{" "}
-                          <span className="pill">SIMULATED</span>
+                          <span className="pill">
+                            {current.mode === "coding"
+                              ? "CONNECTED RUN"
+                              : "SIMULATED"}
+                          </span>
                         </h3>
                         <p className="muted">
-                          These checks verify the demo artifact, not repository
-                          behavior.
+                          {current.mode === "coding"
+                            ? "Inspect baseline and changed test results below. Tests alone do not establish every acceptance criterion. No changes have been published."
+                            : "These checks verify the demo artifact, not repository behavior."}
                         </p>
                         {current.evidence.map((e) => (
                           <div className="evidence-row" key={e.criterion}>
@@ -646,6 +738,25 @@ export default function Home() {
                             <small>{e.detail}</small>
                           </div>
                         ))}
+                        {current.mode === "coding" && (
+                          <button
+                            className="secondary"
+                            onClick={() => {
+                              const url = URL.createObjectURL(
+                                new Blob([current.artifact!.content], {
+                                  type: "application/json",
+                                }),
+                              );
+                              const link = document.createElement("a");
+                              link.href = url;
+                              link.download = `mission-${current.id}.json`;
+                              link.click();
+                              setTimeout(() => URL.revokeObjectURL(url), 1000);
+                            }}
+                          >
+                            Download delivery bundle
+                          </button>
+                        )}
                         <details>
                           <summary>Inspect artifact and SHA-256</summary>
                           <pre>{current.artifact.content}</pre>

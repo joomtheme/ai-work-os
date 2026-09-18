@@ -11,7 +11,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write src scripts tests *.json *.md next.config.ts .github/workflows/*.yml compose.yaml",
     "format:check": "prettier --check src scripts tests *.json *.md next.config.ts .github/workflows/*.yml compose.yaml",
-    "test:http": "node tests/http.cjs"
+    "test:http": "node tests/http.cjs",
+    "worker:coding": "node --env-file=.env --import tsx scripts/coding-worker.ts"
   },
   "type": "module",
   "dependencies": {
