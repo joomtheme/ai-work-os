@@ -9,11 +9,15 @@ The Agent Runtime executes AI workers inside AI Work OS.
 - Context handling
 - Policy enforcement
 - Result reporting
+- Developer-created agent package loading
+- Runtime compatibility layer
 
 ## Lifecycle
 
 ```text
 Create
+ ↓
+Validate Manifest
  ↓
 Load Context
  ↓
@@ -25,3 +29,7 @@ Verify
  ↓
 Report
 ```
+
+## Platform Role
+
+The runtime is the bridge between community-built AI teams and user workspaces.
